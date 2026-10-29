@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -725,6 +726,9 @@ public class GoogDepsWriter {
 			}
 
 			// first scan requires in case this is a module and some have been externed
+			// remember the ones that are kept, so that they aren't added a second time
+			// when this file is processed again without being regenerated (watch mode)
+			HashSet<String> existingRequires = new HashSet<String>();
 			int j = main.fileInfo.googProvideLine + 1;
 			while (j < fileLines.size() && !fileLines.get(j).contains(JSGoogEmitterTokens.GOOG_REQUIRE.getToken()))
 			{
@@ -743,6 +747,7 @@ public class GoogDepsWriter {
                 }
 				else
 				{
+					existingRequires.add(s);
 					j++;
 				}
 			}
@@ -751,6 +756,10 @@ public class GoogDepsWriter {
 			for (int i = n - 1; i >= 0; i--)
 			{
 				String dep = restOfDeps.get(i);
+				if (existingRequires.contains(dep))
+				{
+					continue;
+				}
 				StringBuilder lineBuilder = new StringBuilder();
 				lineBuilder.append(JSGoogEmitterTokens.GOOG_REQUIRE.getToken())
 					.append("('")
