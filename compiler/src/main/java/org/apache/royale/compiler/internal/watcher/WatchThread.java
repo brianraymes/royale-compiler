@@ -223,7 +223,10 @@ public class WatchThread extends Thread
 
 		writer.rebuild(changedCUs, problems.getProblems());
 
-		for (ICompilationUnit cu : changedCUs)
+		// iterate over a copy because reverse dependencies are added to
+		// changedCUs, and modifying a HashSet while iterating it throws
+		// ConcurrentModificationException
+		for (ICompilationUnit cu : new ArrayList<ICompilationUnit>(changedCUs))
 		{
 			DependencyTypeSet dependencyTypes = DependencyTypeSet.allOf();
 			Set<ICompilationUnit> reverseDeps = project.getDirectReverseDependencies(cu, dependencyTypes);
